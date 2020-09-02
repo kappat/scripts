@@ -1,0 +1,57 @@
+.\" Written by K. Tsubohara
+.\" Public domain.
+.Dd $Mdocdate: September 2 2020 $
+.Dt DUALMONITOR 1
+.Os
+.Sh NAME
+.Nm dualmonitor
+.Nd sets up dual monitoring
+.Sh SYNOPSIS
+.Nm
+.Op Fl d | l | r | s | u
+.Op Fl p Ar output
+.Sh DESCRIPTION
+The
+.Nm
+utility sets up dual monitoring through
+.Xr xrandr 1 .
+.Pp
+If no options are provided, the user will be intereactively prompted to enter
+the positioning of the secondary monitor, and if necessary the name of primary
+output.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl d , Fl l , Fl r , Fl u
+Locate the external monitor down, left-of, right-of, up, the primary output.
+.It Fl p Ar output
+Set the primary output.
+If not given,
+.Dq eDP-1
+is set if exists and is connected.
+.It Fl s
+Turn off the output to the external monitor.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.\" .Sh EXAMPLES
+.Sh SEE ALSO
+.Xr xrandr 1
+.Sh CAVEATS
+Some consumer HDMI devices reply inappropriate physical screen size, which may
+result in unsatisfactory setup because the
+.Nm
+utility uses
+.Xr xrandr 1
+with
+.Ql --auto
+option.
+For presentations test it 5 minutes before attendee come in.
+.Sh BUGS
+The
+.Nm
+utility works only if
+.Xr xrandr 1
+reports 2
+.Dq connected
+outputs.

@@ -1,0 +1,85 @@
+#!/bin/sh
+
+# The dumbest dual monitor script for wrapping xrandr(1).
+# Public Domain.
+
+usage_exit() {
+	echo "Usage: $0 [-u|-d|-l|-r|-s] [-p primary output]" 1>&2
+	exit 1
+}
+
+while getopts udlrp:s OPT
+do
+	case $OPT in
+		u) POS_ARG="--above" ;;
+		d) POS_ARG="--below" ;;
+		l) POS_ARG="--left-of" ;;
+		r) POS_ARG="--right-of" ;;
+		p) BUILTIN_OUTPUT="$OPTARG" ;;
+		s) FLAG="single" ;;
+		*) usage_exit ;;
+	esac
+done
+shift $((OPTIND - 1))
+
+# I suppose builtin monitor is named eDP-1 on most recent laptops?
+# If not, a bug report weocome.
+: ${BUILTIN_OUTPUT="eDP-1"}
+
+# Scan the names into a string.
+OUTPUT_NAMES=$(xrandr -q | awk '$2 == "connected" {print $1}')
+
+# Works only if the number of monitors is 2.
+[ "$(echo $OUTPUT_NAMES | wc -w)" -eq 2 ] ||
+{
+	echo "Error: the number of connected monitors is not 2." 1>&2
+	exit 1
+}
+
+# $BUILTIN_OUTPUT must be present
+echo $OUTPUT_NAMES | grep -q $BUILTIN_OUTPUT || {
+	echo "Error: monitor $BUILTIN_OUTPUT is not present." 1>&2
+	echo "Try -p option to set the primary monitor." 1>&2
+	exit 1
+}
+
+# Then the other one should be external
+EXTERNAL_OUTPUT=$(echo $OUTPUT_NAMES |
+	sed 's/'$BUILTIN_OUTPUT'//;s/[[:blank:]]//g')
+
+# -s is given for single monitoring:
+[ "$FLAG" = "single" ] && {
+	xrandr --output $EXTERNAL_OUTPUT --off
+	exit $?
+}
+
+# -p arg is given for positioning:
+[ -n "$POS_ARG" ] && {
+	xrandr --output $BUILTIN_OUTPUT --auto --primary \
+	    --output $EXTERNAL_OUTPUT --auto $POS_ARG $BUILTIN_OUTPUT
+	exit $?
+}
+
+# interactive mode
+printf "Detected monitors:\t[Builtin] %s, [External] %s\n" \
+    $BUILTIN_OUTPUT $EXTERNAL_OUTPUT
+echo "Is $EXTERNAL_OUTPUT to $BUILTIN_OUTPUT,"
+printf "up [u], down [d], left [l] or right [r]? "
+
+# Note: "read -p" is not only non-POSIX, but in (pd)ksh
+# it means "read from the co-process" whereas other sh'es print
+# a command line prompt. Don't use it for portable scripts.
+read LINE
+case $LINE in
+	u ) POS_ARG="--above" ;;
+	d ) POS_ARG="--below" ;;
+	l ) POS_ARG="--left-of" ;;
+	r ) POS_ARG="--right-of" ;;
+	* ) echo "$LINE: unexpected reply" 1>&2; exit 1 ;;
+esac
+
+# Do the job.
+xrandr --output $BUILTIN_OUTPUT --auto --primary \
+    --output $EXTERNAL_OUTPUT --auto $POS_ARG $BUILTIN_OUTPUT
+
+exit $?
