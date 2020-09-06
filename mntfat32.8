@@ -1,0 +1,30 @@
+.\" Written by Katsuyuki Tsubohara
+.\" Public domain
+.Dd $Mdocdate: September 6 2020 $
+.Dt MNTFAT32 8
+.Os
+.Sh NAME
+.Nm mntfat32
+.Nd mounts one FAT32 formatted USB storage device
+.Sh SYNOPSIS
+.Nm mntfat32
+.Op Fl m Ar mountpoint
+.Op Fl r
+.Sh DESCRIPTION
+The
+.Nm
+utility mount a FAT32 formatted slice in an USB storage device.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl m Ar mountpoint
+Mount the filesystem to the specified
+.Ar mountpoint .
+.It Fl r
+Mount the filetystem as read-only.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr msdosfs 5 ,
+.Xr mount 8

@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# Written by Katsuyuki Tsubohara
+# Public domain.
+
+# USB stick utility
+# NOTE: This utility is not portable, runs on *BSDs but not on others
+#       because of assumptions for magic(5) and device nodes namings.
+
+usage_exit () { echo "USAGE: mntfat32 [-m mountpoint] [-r]"; exit 1;}
+
+MNT_FLAGS='-t msdosfs -o -m=660,-M=770'
+MNT_POINT='/mnt/fat32'
+
+while getopts m:r FLAG; do
+	case $FLAG in
+		r )	# read only
+			MNT_FLAGS='-t msdosfs -o -m=440,-M=550,ro'
+		;;
+		m )
+			MNT_POINT="$OPTARG"
+		;;
+		* )
+			usage_exit
+		;;
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+# scan /dev/
+USB_DRIVES="$(find /dev -type c | grep -E '/da[0-9]+s[0-9]+$' |
+    tr '\n' ' ')"
+
+# check whether the slice is FAT32
+# NOTE: 'file -s' is non-POSIX
+for DEV in $USB_DRIVES; do
+	file -s $DEV | grep -iqe 'fat (32 bit)' && {
+		FAT32DEVICES="$FAT32DEVICES""$DEV"' '
+	}
+done
+
+[ $(echo $FAT32DEVICES | wc -w) -eq 0 ] && {
+	echo "No FAT32 device found, or no permission." >&2; exit 2
+}
+
+# mount only one, as this asuumes 1 mount point per execution.
+# NOTE: don't use 'print -p' as it does different thing on pdksh.
+for DEV in $FAT32DEVICES; do
+	printf "Mount ${DEV}? [y/n]: "
+	read LINE
+	case "$LINE" in
+		y )
+			mount $MNT_FLAGS $DEV "$MNT_POINT" &&
+			    echo "$DEV mounted at /mnt/fat32" >&2
+			break
+		;;
+		* )
+			continue
+		;;
+	esac
+done
+exit 0
