@@ -1,0 +1,34 @@
+.\" Written by Katsuyuki Tsubohara
+.\" Public domain.
+.Dd $Mdocdate: Sep 8 2020 $
+.Dt STRIP-PO 1
+.Os
+.Sh NAME
+.Nm strip-po
+.Nd extracts translations from
+.Xr gettext 1
+po file format
+.Sh SYNOPSIS
+.Nm strip-po
+.Sh DESCRIPTION
+The
+.Nm
+utility reads text stream in po format from standard input and writes
+extracted translations to standard output.
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+.Dl strip-po < foo.po > foo.txt
+.Sh SEE ALSO
+.Xr gettext 1
+.Sh BUGS
+There must be a tool to achieve the same thing within the GNU gettext toolchain
+and this utility should not exist.
+The author was unable to use the
+.Xr info 1
+utility to find it quicker than writing an AWK script.
+This manual page should state what
+.Dq po
+stands for and cross-reference the correct documentation that specifies the
+format, which is not done because of the same reason.
+As such, this utility is not expected to work correctly.

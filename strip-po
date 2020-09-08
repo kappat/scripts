@@ -1,0 +1,62 @@
+#!/usr/local/bin/gawk -f
+# Written by Katsuyuki Tsubohara
+# Public domain.
+
+# extract translations from gettext po format
+# using GNU AWK as it handles multibyte encodings properly.
+
+BEGIN {
+	buf_original = ""	# concatenated original contents per msgid
+	buf_translation = ""	# the same, translations
+	in_msgid = 0		# state
+	ctr = 0			# incremented if translation is nonempty
+}
+
+# skip comment and empty lines
+$1 ~ /^#/ || /^[[:blank:]]*$/ {next}
+
+# beginning of msgid - store buffers into arrays here
+$1 == "msgid" {
+	in_msgid = 1
+	if (length(buf_translation) > 0) {
+		original[ctr] = buf_original
+		translation[ctr] = buf_translation
+		ctr++
+	}
+	sub(/^msgid "/, "", $0)
+	sub(/"$/, "", $0)
+	buf_original = $0	# init buffer
+}
+
+# beginning of msgstr
+$1 == "msgstr" {
+	in_msgid = 0
+	sub(/^msgstr "/, "", $0)
+	sub(/"$/, "", $0)
+	buf_translation = $0	# init buffer
+}
+
+# concatenate contents into a buffer
+$1 ~ /^"/ {
+	sub(/^"/, "", $0)
+	sub(/"$/, "", $0)
+	if (in_msgid == 1)
+		buf_original = buf_original $0
+	else
+		buf_translation = buf_translation $0
+}
+
+END {
+	# handle leftover
+	if (length(buf_translation) > 0) {
+		original[ctr] = buf_original
+		translation[ctr] = buf_translation
+		ctr++
+	}
+	for (i = 0; i < ctr; i++) {
+		print "<<<<"
+		print original[i]
+		print ">>>>"
+		print translation[i]
+	}
+}
