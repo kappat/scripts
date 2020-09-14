@@ -30,8 +30,7 @@ shift $((OPTIND - 1))
 OUTPUT_NAMES=$(xrandr -q | awk '$2 == "connected" {print $1}')
 
 # Works only if the number of monitors is 2.
-[ "$(echo $OUTPUT_NAMES | wc -w)" -eq 2 ] ||
-{
+[ "$(echo $OUTPUT_NAMES | wc -w)" -eq 2 ] || {
 	echo "Error: the number of connected monitors is not 2." 1>&2
 	exit 1
 }

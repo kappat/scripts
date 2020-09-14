@@ -44,7 +44,7 @@ done
 }
 
 # mount only one, as this asuumes 1 mount point per execution.
-# NOTE: don't use 'print -p' as it does different thing on pdksh.
+# NOTE: don't use 'read -p' as it does different thing on pdksh.
 for DEV in $FAT32DEVICES; do
 	printf "Mount ${DEV}? [y/n]: "
 	read LINE
