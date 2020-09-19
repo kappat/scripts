@@ -1,0 +1,74 @@
+.\" Written by Katsuyuki Tsubohara.
+.\" Public domain.
+.Dd $Mdocdate: September 19 2020 $
+.Dt JDMENU 1
+.Os
+.Sh NAME
+.Nm jdmenu
+.Nd wraps
+.Xr dmenu 1
+compatibile programs to make use of a menu file in JSON format
+.Sh SYNOPSIS
+.Nm jdmenu
+.Op Fl m Ar progname
+.Op Fl s Ar shell
+.Sh DESCRIPTION
+The
+.Nm
+utility makes use of a JSON file to alias commands by keys
+.Pq names .
+It can be useful for launching programs with many arguments that are not
+quite memorable, for instance a terminal emulator set to a non-UTF8 multibyte
+encoding scheme and font that is appropriate.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl m Ar progname
+Use
+.Xr dmenu 1
+compatible menu utility specified by
+.Ar progname .
+.It Fl s Ar shell
+Use
+.Ar shell
+to execute commands.
+.El
+.Pp
+The menu file should comprise the names to appear on the menubar as key strings
+and the corresponding commands as value strings, e.g.:
+.Bd -literal -offset indent
+{
+  "uxterm": "uxterm -fa 'xft: M+ 1mn:size=16'",
+  "texlive-term": "env PATH=$PATH:/path/to/texlive alacritty"
+}
+.Ed
+.Sh FILES
+.Bl -tag -width $XDG_CONFIG_HOME/jdmenu/menu.json -compact
+.It $XDG_CONFIG_HOME/jdmenu/menu.json
+If
+.Pa $XDG_CONFIG_HOME
+is unset, the
+.Nm
+utility falls back to
+.Pa $HOME/.config/jdmenu/menu.json .
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+Use
+.Xr dmenu-wl 1
+and
+.Xr swaymsg 1
+using Mplus font:
+.Bd -literal -offset indent
+jdmenu -p "dmenu-wl -fa 'M+ 1mn size=16'" \\
+       -s 'swaymsg exec --'
+.Ed
+.Sh SEE ALSO
+.Xr dmenu 1
+.Sh BUGS
+As the
+.Nm
+utility does not have multilevel menu functionality or such yet, and most
+likely will not in the near future, there is no point in using a serialisation
+format like JSON.

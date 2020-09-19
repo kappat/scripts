@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# Written by Katsuyuki Tsubohara.
+# Public domain.
+
+# wrapper for dmenu-compatibles to use a menu file in json.
+# using the jq utility.
+
+# I use launchers for stuff that needs cmd line options I don't quite remember
+# e.g. uxterm -fg white -bg black -fa 'xft: M+ 1mn medium:size=16 -T ...
+# It's a bit pointless to use ls $PATH, as shells auto-complete.
+
+display-usage () {
+	print 'USAGE: jdmenu [-p <progname>] [-s <progname>]'
+	exit 1
+}
+
+is-cmd () {
+	local X=$(echo "$@" | cut -w -f 1)
+	which -s "$X" || [ -x "$X" ]
+}
+
+list-keys () {
+	jq 'keys|.[]' "$1"
+}
+
+get-cmd () {
+	read LINE;
+	jq -r ".$LINE" "$1"
+}
+
+while getopts m:s: OPT; do
+	case $OPT in
+		m )	MENU_PROG="$OPTARG";;
+		s )	LAUNCHER="$OPTARG";;
+		* )	display-usage;;
+	esac
+done
+shift $(( OPTIND - 1 ))
+
+: ${XDG_CONFIG_HOME:="${HOME}/.config"}
+: ${MENUFILE:="${XDG_CONFIG_HOME}/jdmenu/menu.json"}
+: ${MENU_PROG:="dmenu"}
+: ${LAUNCHER:="NONE"}
+
+[ "$LAUNCHER" = "NONE" ] || is-cmd "$LAUNCHER" || exit 2
+is-cmd "$MENU_PROG" || exit 3
+[ -f "$MENUFILE" ] || exit 4
+
+CMD="$(
+	list-keys "$MENUFILE" |
+	eval "$MENU_PROG $MENU_FLAGS" |
+	get-cmd "$MENUFILE"
+)"
+is-cmd "$CMD" || exit 5
+
+# do the job
+if [ "$LAUNCHER" = "NONE" ]; then
+	eval $CMD &
+	exit $?
+else
+	eval $LAUNCHER $CMD &
+	exit $?
+fi
